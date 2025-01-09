@@ -1,10 +1,13 @@
 from rest_framework import serializers
-
 from account.models import User
-
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from account.models import User
+from rest_framework.response import Response
+from rest_framework import serializers
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
+
 
 class LoginSerializer(serializers.Serializer):
 
@@ -82,12 +85,7 @@ class ChangePasswordSerializer(serializers.Serializer):
         user.save()
         return user
 
-from rest_framework import serializers
-from account.models import User
 
-from rest_framework import serializers
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 
 User = get_user_model() 
 

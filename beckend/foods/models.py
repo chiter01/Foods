@@ -1,5 +1,7 @@
 from django.db import models
-
+from django.conf import settings
+from django.db import models
+from django.contrib.auth.models import User
 class Category(models.Model):
     class Meta:
         verbose_name = 'категория'
@@ -10,7 +12,6 @@ class Category(models.Model):
     def __str__(self):
         return f'{self.name}'
 
-from django.conf import settings
 
 class Cart(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, verbose_name="Пользователь", related_name="cart")
@@ -19,8 +20,12 @@ class Cart(models.Model):
     def __str__(self):
         return f"Корзина {self.user.first_name}"
 
+    def is_empty(self):
+        return not self.items.exists()
+    
     def total_price(self):
         return sum(item.total_price() for item in self.items.all())
+    
 
 class CartItem(models.Model):
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, verbose_name="Корзина", related_name="items")
@@ -32,6 +37,12 @@ class CartItem(models.Model):
 
     def total_price(self):
         return self.product.price * self.quantity
+
+    @property
+    def price(self):
+        return self.product.price
+
+
 
 class Food(models.Model):
     class Meta:
@@ -51,3 +62,44 @@ class Food(models.Model):
     weight = models.CharField(verbose_name="Вес (г)", max_length=50)
     def __str__(self):
         return self.name
+
+
+class Order(models.Model):
+    DELIVERY_CHOICES = [
+        ('delivery', 'Доставка'),
+        ('pickup', 'Самовывоз'),
+    ]
+    
+    PAYMENT_CHOICES = [
+        ('online', 'Оплата онлайн'),
+        ('card', 'Курьеру картой'),
+        ('cash', 'Наличные'),
+    ]
+    
+    DELIVERY_TIME_CHOICES = [
+        ('soon', 'В ближайшее время'),
+        ('time', 'Ко времени'),
+    ]
+    
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True, blank=True, verbose_name="Пользователь")
+    name = models.CharField(max_length=100, verbose_name="Имя")
+    phone = models.CharField(max_length=15, verbose_name="Телефон")
+    delivery_type = models.CharField(max_length=10, choices=DELIVERY_CHOICES, verbose_name="Тип доставки")
+    address_street = models.CharField(max_length=255, blank=True, null=True, verbose_name="Улица")
+    address_house = models.CharField(max_length=10, blank=True, null=True, verbose_name="Дом")
+    address_apartment = models.CharField(max_length=10, blank=True, null=True, verbose_name="Квартира/офис")
+    address_floor = models.CharField(max_length=10, blank=True, null=True, verbose_name="Этаж")
+    comment = models.TextField(blank=True, null=True, verbose_name="Комментарий")
+    payment_method = models.CharField(max_length=10, choices=PAYMENT_CHOICES, verbose_name="Метод оплаты")
+    delivery_time = models.CharField(max_length=10, choices=DELIVERY_TIME_CHOICES, verbose_name="Время доставки")
+    specific_time = models.TimeField(blank=True, null=True, verbose_name="Указанное время")
+    person_count = models.PositiveIntegerField(default=1, verbose_name="Количество персон")
+    callback_needed = models.BooleanField(default=False, verbose_name="Нужен звонок")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="Дата создания")
+
+    class Meta:
+        verbose_name = "Заказ"
+        verbose_name_plural = "Заказы"
+
+    def __str__(self):
+        return f"Заказ #{self.id} - {self.name}"

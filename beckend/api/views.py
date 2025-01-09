@@ -1,8 +1,14 @@
-from rest_framework import viewsets, generics
+from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from foods.models import Food, Category, Cart, CartItem
-from .serializers import FoodSerializer, CategorySerializer, CartSerializer, CartItemSerializer
+from foods.models import Food, Category, Cart, CartItem, Order
+from .serializers import FoodSerializer, CategorySerializer, CartSerializer, CartItemSerializer, OrderSerializer
 
+class OrderViewSet(viewsets.ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 class FoodViewSet(viewsets.ModelViewSet):
     queryset = Food.objects.all()
     serializer_class = FoodSerializer
