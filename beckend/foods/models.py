@@ -45,10 +45,12 @@ class CartItem(models.Model):
 
 
 class Food(models.Model):
+    
     class Meta:
         verbose_name = 'Еда'
         verbose_name_plural = 'Еды'
-    name = models.CharField('название', max_length=50, unique=True)
+    
+    name = models.CharField('название', max_length=50)
     description = models.CharField('описание', max_length=400, help_text='Просто описание')
     price = models.DecimalField('цена', max_digits=10, decimal_places=2, default=0)
     is_published = models.BooleanField('публичность', default=True)
@@ -60,6 +62,7 @@ class Food(models.Model):
     carbohydrates = models.CharField(verbose_name="Углеводы (г)", max_length=50)
     calories = models.CharField(verbose_name="Ккал", max_length=50)
     weight = models.CharField(verbose_name="Вес (г)", max_length=50)
+    
     def __str__(self):
         return self.name
 
